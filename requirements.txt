@@ -22,7 +22,7 @@ ipaddr==2.2.0
 lockfile==0.12.2
 lxml==4.5.2
 moviepy==1.0.3
-msgpack==0.6.2
+msgpack==1.0.0
 multidict==4.7.6
 numpy==1.19.2
 packaging==20.3
