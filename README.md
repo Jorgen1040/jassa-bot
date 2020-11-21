@@ -1,4 +1,7 @@
 # Jasså Discord Bot
+
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/2e043d52353b469db85478116f7b0612)](https://app.codacy.com/gh/Jorgen1040/jassa-bot?utm_source=github.com&utm_medium=referral&utm_content=Jorgen1040/jassa-bot&utm_campaign=Badge_Grade_Settings)
+
 ![Docker](https://github.com/Jorgen1040/jassa-bot/workflows/Docker/badge.svg)
 
 Just a super simple bot for generating a gif meme.
