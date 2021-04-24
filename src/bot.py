@@ -20,6 +20,7 @@ import requests
 import rule34
 from bs4 import BeautifulSoup as bs
 from discord.ext import commands
+from discord_buttons import DiscordButton, Button, ButtonStyle, InteractionType
 
 token = os.environ["BOT_TOKEN"]
 ownerid = os.environ["OWNER_ID"]
@@ -54,6 +55,22 @@ intents = discord.Intents().default()
 intents.members = True
 
 bot = commands.Bot(command_prefix=prefix, owner_id=ownerid, intents=intents)
+ddb = DiscordButton(bot)
+
+@bot.command()
+async def button(ctx):
+    m = await ctx.send(
+        "Waow knapper!",
+        buttons=[
+            Button(style=ButtonStyle.green, label="🥺")
+        ]
+    )
+
+    res = await ddb.wait_for_button_click(m)
+    await res.respond(
+        type=InteractionType.ChannelMessageWithSource,
+        content="Kegt!"
+    )
 
 # Emojis :)
 ok = "✅"

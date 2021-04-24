@@ -11,6 +11,7 @@ lxml = "*"
 coloredlogs = "*"
 ffmpeg-python = "*"
 requests = "*"
+discord-buttons = "*"
 
 [dev-packages]
 pre-commit = "*"
