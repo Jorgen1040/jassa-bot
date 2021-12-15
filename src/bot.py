@@ -149,6 +149,14 @@ async def on_command_error(ctx, error):
         traceback.print_exception(type(error), error, error.__traceback__)
 
 
+@bot.commands()
+async def gjett_token(ctx, args):  # Awesome:
+    if args := token:
+        await ctx.send(f"du gjetta {args} som var teit og feil")
+    else:
+        await ctx.send("flink (riktig, sant)")
+
+
 @bot.command(aliases=["pog"])
 async def ping(ctx):
     ping = round(bot.latency * 1000)
