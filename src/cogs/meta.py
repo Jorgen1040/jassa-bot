@@ -7,40 +7,11 @@ import psutil
 
 logger = logging.getLogger(__name__)
 
-# Set time the bot was loaded (used for uptime)
-load_time = datetime.datetime.now()
 
-
-class Meta(commands.Cog):
-    """
-    Commands for meta information (info about the bot)
-    """
-    # TODO: Custom help command
-    def __init__(self, bot: commands.Bot):
-        self.bot = bot
-
-    @commands.command(aliases=["info", "stats"])
-    async def about(self, ctx: commands.Context):
-        """
-        Returns a nice embed with info about the bot
-        """
-
-        embed = discord.Embed(color=0x039ea6)
-        embed.set_author(name="Jasså Bot Info", icon_url=self.bot.user.avatar.url)
-        embed.add_field(name=":crown: Owner:", value="Jøgen#0001")
-        embed.add_field(name=":robot: Running commit:", value=self.get_git_commit())
-        embed.add_field(name=":books: Library:", value=f"Novus {discord.__version__}")
-        embed.add_field(name=":shield: Guilds:", value=len(self.bot.guilds))
-        embed.add_field(name=":notebook_with_decorative_cover: Channels:", value=self.get_bot_channels(self))
-        embed.add_field(name=":busts_in_silhouette: Users:", value=len(self.bot.users))
-        embed.add_field(name=":envelope: Invite:", value=f"[Click here](https://discordapp.com/oauth2/authorize?client_id={self.bot.user.id}&permissions=275364564048&scope=bot)")
-        embed.add_field(name=":calendar_spiral: Uptime:", value=self.get_uptime())
-        embed.add_field(name=":brain: Memory Usage:", value=f"{self.get_memory():.2f} MB")
-        await ctx.send(embed=embed)
-
+class Stats():
     def get_uptime():
-        uptime_raw = datetime.datetime.now() - load_time
-        seconds = uptime_raw.seconds
+        uptime_raw = datetime.datetime.now().timestamp() - psutil.Process(os.getpid()).create_time()
+        seconds = int(uptime_raw)
         minutes = seconds // 60
         hours = minutes // 60
         days = hours // 24
@@ -61,15 +32,14 @@ class Meta(commands.Cog):
         return " ".join(uptime_str.split(" ")[:3])
 
     def get_git_commit():
-        commit = os.getenv("GIT_COMMIT", "Unknown")
+        commit = os.getenv("GIT_COMMIT")
         logger.info(f"Git commit: {commit}")
-        # If GIT_COMMIT is an empty string
-        if commit == "":
-            commit = "Unknown"
-        if commit != "Unknown":
-            # Convert to link and shorten hash
-            short_hash = commit[:7]
-            commit = f"[{short_hash}](https://github.com/Jorgen1040/jassa-bot/commit/{commit})"
+        # If GIT_COMMIT is an empty string return Unknown
+        if commit == "" or None:
+            return "Unknown"
+        # Convert to link and shorten hash
+        short_hash = commit[:7]
+        commit = f"[{short_hash}](https://github.com/Jorgen1040/jassa-bot/commit/{commit})"
         return commit
 
     def get_bot_channels(self):
@@ -86,10 +56,33 @@ class Meta(commands.Cog):
         mem = process.memory_info().rss / 1024 / 1024
         return mem
 
-    # def get_bot_info():
-    #     with psutil.Process().oneshot() as proc:
-    #         uptime = datetime.timedelta(seconds=datetime.datetime.now() - proc.create_time())
-    #         cpu_time = datetime.timedelta(seconds=(cpu := proc.cpu_times().system + cpu.user))
+
+class Meta(commands.Cog):
+    """
+    Commands for meta information (info about the bot)
+    """
+    # TODO: Custom help command
+    def __init__(self, bot: commands.Bot):
+        self.bot = bot
+
+    @commands.command(aliases=["info", "stats"])
+    async def about(self, ctx: commands.Context):
+        """
+        Returns a nice embed with info about the bot
+        """
+
+        embed = discord.Embed(color=0x039ea6)
+        embed.set_author(name="Jasså Bot Info", icon_url=self.bot.user.avatar.url)
+        embed.add_field(name=":crown: Owner:", value=str(self.bot.get_user(self.bot.owner_id)))
+        embed.add_field(name=":robot: Running commit:", value=Stats.get_git_commit())
+        embed.add_field(name=":books: Library:", value=f"Novus {discord.__version__}")
+        embed.add_field(name=":shield: Guilds:", value=len(self.bot.guilds))
+        embed.add_field(name=":notebook_with_decorative_cover: Channels:", value=Stats.get_bot_channels(self))
+        embed.add_field(name=":busts_in_silhouette: Users:", value=len(self.bot.users))
+        embed.add_field(name=":envelope: Invite:", value=f"[Click here](https://discordapp.com/oauth2/authorize?client_id={self.bot.user.id}&permissions=275364564048&scope=bot)")
+        embed.add_field(name=":calendar_spiral: Uptime:", value=Stats.get_uptime())
+        embed.add_field(name=":brain: Memory Usage:", value=f"{Stats.get_memory():.2f} MB")
+        await ctx.send(embed=embed)
 
 
 def setup(bot: commands.Bot):

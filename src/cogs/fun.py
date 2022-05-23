@@ -10,6 +10,7 @@ import time
 logger = logging.getLogger(__name__)
 
 
+# TODO: Command that plays Youtube music (via VPN) to access new releases early
 class Fun(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
@@ -84,6 +85,48 @@ class Fun(commands.Cog):
         if isinstance(error, commands.MissingRequiredArgument):
             await ctx.message.add_reaction(const.NO)
             await ctx.send(f"Mangler navn.\nRiktig bruk: `{ctx.prefix}jasså <navn>`")
+
+    @commands.command(aliases=["lb"])
+    @commands.guild_only()
+    async def roleleaderboard(self, ctx: commands.Context, args: str = None):
+        await ctx.message.add_reaction(const.OK)
+        # Parse args
+        if args is None:
+            limit = 10
+        elif args.lower() == "full":
+            # Set the limit to a high number
+            limit = 999999
+        else:
+            if args.isdigit():
+                limit = int(args)
+            else:
+                return await ctx.send(f"{discord.utils.escape_markdown(args)} is not a valid number. Please use a number or `full`")
+            if limit < 0:
+                return await ctx.send("Please use a number greater than 0")
+        # Get the role leaderboard
+        members_list = ctx.guild.members
+        leaderboard = {}
+        for member in members_list:
+            leaderboard[member.display_name] = len(member.roles)
+        # Sort the leaderboard
+        sorted_leaderboard = sorted(leaderboard.items(), key=lambda x: x[1], reverse=True)
+        leaderboard_str = ""
+        for i, member in enumerate(sorted_leaderboard):
+            if i == limit:
+                break
+            username = discord.utils.escape_markdown(member[0])
+            current = f"{i+1}. {username}: {member[1]} roles\n"
+            if len(leaderboard_str) + len(current) >= 4096:
+                await ctx.send("Too many users, displaying as many as possible")
+                break
+            else:
+                leaderboard_str += current
+        # Send the leaderboard
+        # TODO: Add pagination
+        embed = discord.Embed(title="Role leaderboard", description=leaderboard_str, color=discord.Color.gold())
+        # embed.add_field(name="Role leaderboard", value=leaderboard_str)
+        await ctx.send(embed=embed)
+        await ctx.send(len(leaderboard_str))
 
 
 def setup(bot: commands.Bot):
