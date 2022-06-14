@@ -387,7 +387,7 @@ async def jassaaudio_error(ctx, error):
 
 
 @bot.command(aliases=["dallemini", "ai", "aiimage"])
-async def dalle(ctx: commands.Context, prompt: str):
+async def dalle(ctx: commands.Context, *, prompt: str):
     await ctx.message.add_reaction(ok)
     async with ctx.channel.typing():
         headers = {
@@ -408,24 +408,23 @@ async def dalle(ctx: commands.Context, prompt: str):
             'sec-ch-ua-platform': '"Windows"',
             'sec-gpc': '1',
         }
-
+        wait_msg = await ctx.send("Working, this usually takes 120 seconds")
         async def get_images(prompt: str, n: int):
             async with aiohttp.ClientSession() as s:
                 # Sleep a bit if retrying
                 if n > 1:
                     await ctx.message.add_reaction(ok)
                     await ctx.message.remove_reaction(no, bot.user)
-                    await asyncio.sleep(5)
-                wait_msg = await ctx.send("Working, this will take about 120 seconds")
+                    await asyncio.sleep(1)
+                    await wait_msg.edit("Working, this usually takes 120 seconds")
                 async with s.post("https://bf.dallemini.ai/generate", headers=headers, json={"prompt": prompt}) as r:
-                    logger.info(r.status)
                     if r.status == 503:
                         await wait_msg.delete()
                         await ctx.message.add_reaction(no)
                         await ctx.message.remove_reaction(ok, bot.user)
                         if n > 5:
-                            return await ctx.send("Too much traffic, try again later.")
-                        await ctx.send(f"Too much traffic, retrying ({n}/5)", delete_after=5)
+                            return await wait_msg.edit("Too much traffic, try again later.")
+                        await wait_msg.edit(f"Too much traffic, retrying ({n}/5)")
                         return await get_images(prompt, n + 1)
                     json = await r.json()
                     await wait_msg.delete()
