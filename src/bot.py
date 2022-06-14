@@ -408,7 +408,7 @@ async def dalle(ctx: commands.Context, *, prompt: str):
             'sec-ch-ua-platform': '"Windows"',
             'sec-gpc': '1',
         }
-        wait_msg = await ctx.send("Working, this usually takes 120 seconds")
+        wait_msg: discord.Message = await ctx.send("Working, this usually takes 120 seconds")
         async def get_images(prompt: str, n: int):
             async with aiohttp.ClientSession() as s:
                 # Sleep a bit if retrying
@@ -416,14 +416,14 @@ async def dalle(ctx: commands.Context, *, prompt: str):
                     await ctx.message.add_reaction(ok)
                     await ctx.message.remove_reaction(no, bot.user)
                     await asyncio.sleep(1)
-                    await wait_msg.edit("Working, this usually takes 120 seconds")
+                    await wait_msg.edit(content="Working, this usually takes 120 seconds")
                 async with s.post("https://bf.dallemini.ai/generate", headers=headers, json={"prompt": prompt}) as r:
                     if r.status == 503:
                         await ctx.message.add_reaction(no)
                         await ctx.message.remove_reaction(ok, bot.user)
                         if n > 5:
-                            return await wait_msg.edit("Too much traffic, try again later.")
-                        await wait_msg.edit(f"Too much traffic, retrying ({n}/5)")
+                            return await wait_msg.edit(content="Too much traffic, try again later.")
+                        await wait_msg.edit(content=f"Too much traffic, retrying ({n}/5)")
                         return await get_images(prompt, n + 1)
                     json = await r.json()
                     await wait_msg.delete()
@@ -432,7 +432,7 @@ async def dalle(ctx: commands.Context, *, prompt: str):
                     for image in b64_images:
                         files.append(discord.File(io.BytesIO(
                             base64.b64decode(image.replace("\n", ""))), filename="image.png"))
-                    await ctx.send(files=files)
+                    await ctx.send(content=discord.utils.escape_markdown(prompt), files=files)
         await get_images(prompt, 1)
 
 
