@@ -419,7 +419,6 @@ async def dalle(ctx: commands.Context, *, prompt: str):
                     await wait_msg.edit("Working, this usually takes 120 seconds")
                 async with s.post("https://bf.dallemini.ai/generate", headers=headers, json={"prompt": prompt}) as r:
                     if r.status == 503:
-                        await wait_msg.delete()
                         await ctx.message.add_reaction(no)
                         await ctx.message.remove_reaction(ok, bot.user)
                         if n > 5:
