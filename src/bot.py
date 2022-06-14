@@ -1,6 +1,6 @@
 import asyncio
-import hashlib
 import base64
+import hashlib
 import io
 import json
 import logging
@@ -13,6 +13,7 @@ from datetime import datetime
 from distutils.util import strtobool
 from urllib.parse import quote
 
+import aiohttp
 import colorlog
 import discord
 import ffmpeg
@@ -385,34 +386,64 @@ async def jassaaudio_error(ctx, error):
         await ctx.send(f"Mangler navn (eller noe annet).\nRiktig bruk: `{prefix}jassåaudio <navn>`")
 
 
-# TODO: This only works with Novus
-# @bot.command(
-#     application_command_meta=commands.ApplicationCommandMeta(
-#         options=[
-#             discord.ApplicationCommandOption(
-#                 name="text",
-#                 type=discord.ApplicationCommandOptionType.string,
-#                 description="The text to be read aloud by TikTok TTS"
-#             ),
-#             discord.ApplicationCommandOption(
-#                 name="voice",
-#                 type=discord.ApplicationCommandOptionType.string,
-#                 description="The voice to be used by TikTok TTS",
-#                 default="en_us_001",
-#                 required=False,
-#                 choices=
-#             )
-#         ]
-#     )
-# )
-# async def tts(ctx, text: str, voice: str):
-#     await ctx.send("Waow")
-#
-#
-# async def main():
-#     await bot.login(token)
-#     await bot.register_application_commands()
-#     await bot.connect()
+@bot.command(aliases=["dallemini", "ai", "aiimage"])
+async def dalle(ctx: commands.Context, prompt: str):
+    await ctx.message.add_reaction(ok)
+    async with ctx.channel.typing():
+        headers = {
+            'Accept': 'application/json',
+            'Accept-Language': 'en-US,en;q=0.9,nb-NO;q=0.8,nb;q=0.7,es-US;q=0.6,es;q=0.5,no;q=0.4',
+            'Cache-Control': 'no-cache',
+            'Connection': 'keep-alive',
+            'Origin': 'https://hf.space',
+            'Pragma': 'no-cache',
+            'Referer': 'https://hf.space/',
+            'Sec-Fetch-Dest': 'empty',
+            'Sec-Fetch-Mode': 'cors',
+            'Sec-Fetch-Site': 'cross-site',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36',
+            'dnt': '1',
+            'sec-ch-ua': '" Not A;Brand";v="99", "Chromium";v="102", "Google Chrome";v="102"',
+            'sec-ch-ua-mobile': '?0',
+            'sec-ch-ua-platform': '"Windows"',
+            'sec-gpc': '1',
+        }
+
+        async def get_images(prompt: str, n: int):
+            async with aiohttp.ClientSession() as s:
+                # Sleep a bit if retrying
+                if n > 1:
+                    await ctx.message.add_reaction(ok)
+                    await ctx.message.remove_reaction(no, bot.user)
+                    await asyncio.sleep(5)
+                wait_msg = await ctx.send("Working, this will take about 120 seconds")
+                async with s.post("https://bf.dallemini.ai/generate", headers=headers, json={"prompt": prompt}) as r:
+                    logger.info(r.status)
+                    if r.status == 503:
+                        await wait_msg.delete()
+                        await ctx.message.add_reaction(no)
+                        await ctx.message.remove_reaction(ok, bot.user)
+                        if n > 5:
+                            return await ctx.send("Too much traffic, try again later.")
+                        await ctx.send(f"Too much traffic, retrying ({n}/5)", delete_after=5)
+                        return await get_images(prompt, n + 1)
+                    json = await r.json()
+                    await wait_msg.delete()
+                    b64_images = json["images"]
+                    files = []
+                    for image in b64_images:
+                        files.append(discord.File(io.BytesIO(
+                            base64.b64decode(image.replace("\n", ""))), filename="image.png"))
+                    await ctx.send(files=files)
+        await get_images(prompt, 1)
+
+
+@dalle.error
+async def dalle_error(ctx, error):
+    if isinstance(error, commands.MissingRequiredArgument):
+        await ctx.message.add_reaction(no)
+        await ctx.message.remove_reaction(ok, bot.user)
+        await ctx.send(f"Missing required prompt. Usage: `{prefix}dalle <prompt>`")
 
 
 @bot.command(aliases=["activites", "activity"])
