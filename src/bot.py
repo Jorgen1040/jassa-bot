@@ -432,7 +432,7 @@ async def dalle(ctx: commands.Context, *, prompt: str):
                     for image in b64_images:
                         files.append(discord.File(io.BytesIO(
                             base64.b64decode(image.replace("\n", ""))), filename="image.png"))
-                    await ctx.send(content=discord.utils.escape_markdown(prompt), files=files)
+                    await ctx.send(content=discord.utils.escape_markdown(discord.utils.escape_mentions(prompt)), files=files)
         await get_images(prompt, 1)
 
 
