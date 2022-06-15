@@ -61,6 +61,23 @@ if __name__ == '__main__':
         try:
             bot.load_extension(extension)
         except Exception as e:
-            logger.error(f"Failed to load extension {extension}: {e.name}")
+            logger.error(f"Failed to load extension {extension}: {e}")
+            # logger.error(e.with_traceback(None))
 
-    bot.run(token)
+    async def main():
+        await bot.login(token)
+        # logger.info(bot.commands)
+        app_commands = await bot.register_application_commands(guild=bot.get_guild(461648348622094347))
+        for command in app_commands:
+            logger.info(command.name)
+        await bot.connect()
+
+    loop = bot.loop
+    loop.run_until_complete(main())
+
+    # try:
+    #     loop.run_until_complete(main())
+    # finally:
+    #     loop.close()
+
+    # bot.run(token)

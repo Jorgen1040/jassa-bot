@@ -1,13 +1,25 @@
-import discord
-from discord.ext import commands
-from cogs.utils import constants as const
+import base64
 import hashlib
+import io
 import logging
 import os
-import ffmpeg
 import time
 
+import aiohttp
+import discord
+import ffmpeg
+from discord.ext import commands
+
+from cogs.utils import constants as const
+
 logger = logging.getLogger(__name__)
+voices = []
+
+for i, voice in enumerate(const.TTS_VOICES):
+    if not i % 2:
+        voices.append(discord.ApplicationCommandOptionChoice(
+            name=const.TTS_VOICES[i + 1], value=voice))
+        # logger.info(f"{const.TTS_VOICES[i + 1]}, {voice} added to voice list")
 
 
 # TODO: Command that plays Youtube music (via VPN) to access new releases early
@@ -85,6 +97,45 @@ class Fun(commands.Cog):
         if isinstance(error, commands.MissingRequiredArgument):
             await ctx.message.add_reaction(const.NO)
             await ctx.send(f"Mangler navn.\nRiktig bruk: `{ctx.prefix}jasså <navn>`")
+
+    @commands.command(
+        application_command_meta=commands.ApplicationCommandMeta(
+            options=[
+                discord.ApplicationCommandOption(
+                    name="text",
+                    type=discord.ApplicationCommandOptionType.string,
+                    description="The text to be read aloud by TikTok TTS"
+                ),
+                discord.ApplicationCommandOption(
+                    name="voice",
+                    type=discord.ApplicationCommandOptionType.string,
+                    description="The voice to be used by TikTok TTS",
+                    required=False,
+                    choices=voices
+                )
+            ]
+        )
+    )
+    async def tiktok(self, ctx: commands.SlashContext, text: str, voice: str = "en_us_001"):
+        await ctx.interaction.response.defer()
+        async with aiohttp.ClientSession() as s:
+            async with s.post("https://api16-normal-useast5.us.tiktokv.com/media/api/text/speech/invoke/?speaker_map_type=0", params={"text_speaker": voice, "req_text": text}) as r:
+                json = await r.json()
+                vstr = [json["data"]["v_str"]][0]
+                msg = [json["message"]][0]
+
+                if msg != "success":
+                    # await ctx.message.add_reaction(const.NO)
+                    # await ctx.message.remove_reaction(const.OK, self.bot.user)
+                    return await ctx.send(f"{msg}")
+                file = discord.File(io.BytesIO(
+                    base64.b64decode(vstr)), filename="tiktok.mp3")
+                await ctx.send(file=file)
+
+    @tiktok.error
+    async def tiktok_error(self, ctx, error):
+        # TODO: Do proper error handling
+        logger.error(error)
 
     @commands.command(aliases=["lb"])
     @commands.guild_only()

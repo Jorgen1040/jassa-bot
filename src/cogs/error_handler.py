@@ -27,9 +27,13 @@ class ErrorHandler(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
+    # TODO: Fix this trying to add reactions to interactions
     @commands.Cog.listener()
     async def on_command_error(self, ctx: commands.Context, error):
-        await ctx.message.remove_reaction(const.OK, self.bot.user)
+        try:
+            await ctx.message.remove_reaction(const.OK, self.bot.user)
+        except Exception as e:
+            logger.error(e)
         error = getattr(error, 'original', error)
         if isinstance(error, commands.NSFWChannelRequired):
             await ctx.message.add_reaction(const.NSFW)
