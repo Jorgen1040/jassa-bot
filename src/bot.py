@@ -432,6 +432,8 @@ async def dalle(ctx: commands.Context, *, prompt: str):
                             return await wait_msg.edit(content="Too much traffic, try again later.")
                         await wait_msg.edit(content=f"Too much traffic, retrying ({n}/5)")
                         return await get_images(prompt, n + 1)
+                    if r.status != 200:
+                        return await wait_msg.edit(content=f"Error: {r.status}")
                     json = await r.json()
                     await wait_msg.delete()
                     b64_images = json["images"]
