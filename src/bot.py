@@ -54,7 +54,8 @@ rule34 = rule34.Sync()
 intents = discord.Intents().default()
 intents.members = True
 
-bot = commands.Bot(command_prefix=commands.when_mentioned_or(prefix), owner_id=ownerid, intents=intents)
+bot = commands.Bot(command_prefix=commands.when_mentioned_or(
+    prefix), owner_id=ownerid, intents=intents)
 
 # Emojis :)
 ok = "✅"
@@ -98,7 +99,8 @@ async def init_db():
             for server in servers:
                 servers_coll.update_one(
                     {"_id": int(server)},
-                    {"$set": {"nickname_log_channel": servers[server]["nickname_log_channel"]}},
+                    {"$set": {
+                        "nickname_log_channel": servers[server]["nickname_log_channel"]}},
                     upsert=True
                 )
             with open("/jassa-bot/aliases.json", "r") as f:
@@ -114,7 +116,8 @@ async def init_db():
                 )
             os.remove("/jassa-bot/servers.json")
             os.remove("/jassa-bot/aliases.json")
-            logger.info("Successfully migrated to new MongoDB database, and removed old files")
+            logger.info(
+                "Successfully migrated to new MongoDB database, and removed old files")
         else:
             logger.warning("MongoDB database not found, creating new database")
             # Add all servers to database
@@ -134,7 +137,8 @@ else:
 
 # Check for linux and folders
 if sys.platform != "linux":
-    logger.warning("Bot is not made for non Linux installations. Persistence may not work")
+    logger.warning(
+        "Bot is not made for non Linux installations. Persistence may not work")
 try:
     if os.path.isdir("/jassa-bot/output/optimized"):
         logger.info("All files are correct :). Persistence is enabled")
@@ -143,7 +147,8 @@ try:
         logger.info("Made output folders, persistence is now enabled")
 except PermissionError as e:
     logger.warning(e)
-    logger.warning("Permission denied for /jassa-bot directory. Persistence will not work!")
+    logger.warning(
+        "Permission denied for /jassa-bot directory. Persistence will not work!")
 
 
 @bot.event
@@ -291,7 +296,8 @@ async def jassa(ctx, args):
                 print("stdout:", e.stdout.decode("utf8"))
                 print("stderr:", e.stderr.decode("utf8"))
                 raise e
-            logger.info(f"Successfully generated gif with {args} in {time.time()-start_time} seconds")
+            logger.info(
+                f"Successfully generated gif with {args} in {time.time()-start_time} seconds")
 
             os.remove(filename)
             await ctx.send(file=discord.File(optimized))
@@ -409,6 +415,7 @@ async def dalle(ctx: commands.Context, *, prompt: str):
             'sec-gpc': '1',
         }
         wait_msg: discord.Message = await ctx.send("Working, this usually takes 120 seconds")
+
         async def get_images(prompt: str, n: int):
             async with aiohttp.ClientSession() as s:
                 # Sleep a bit if retrying
@@ -432,7 +439,7 @@ async def dalle(ctx: commands.Context, *, prompt: str):
                     for image in b64_images:
                         files.append(discord.File(io.BytesIO(
                             base64.b64decode(image.replace("\n", ""))), filename="image.png"))
-                    await ctx.send(content=discord.utils.escape_markdown(discord.utils.escape_mentions(prompt)), files=files)
+                    await ctx.reply(content=discord.utils.escape_markdown(discord.utils.escape_mentions(prompt)), files=files)
         await get_images(prompt, 1)
 
 
