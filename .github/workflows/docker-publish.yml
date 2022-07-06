@@ -27,7 +27,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v1
-    - name: Check for any exposed keys
+   # - name: Check for any exposed keys
     - uses: zricethezav/gitleaks-action@v2
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
