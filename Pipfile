@@ -13,6 +13,7 @@ requests = "*"
 colorlog = "*"
 discord-together = "*"
 pymongo = {extras = ["srv"], version = "*"}
+pillow = "*"
 
 [dev-packages]
 pre-commit = "*"

@@ -12,6 +12,7 @@ import traceback
 from datetime import datetime
 from distutils.util import strtobool
 from urllib.parse import quote
+from PIL import Image
 
 import aiohttp
 import colorlog
@@ -434,14 +435,25 @@ async def dalle(ctx: commands.Context, *, prompt: str):
                         return await get_images(prompt, n + 1)
                     if r.status != 200:
                         return await wait_msg.edit(content=f"Error: {r.status}")
-                    json = await r.json()
+                    r_json = await r.json()
                     await wait_msg.delete()
-                    b64_images = json["images"]
-                    files = []
-                    for image in b64_images:
-                        files.append(discord.File(io.BytesIO(
-                            base64.b64decode(image.replace("\n", ""))), filename="image.png"))
-                    await ctx.reply(content=discord.utils.escape_markdown(discord.utils.escape_mentions(prompt)), files=files)
+                    b64_images = r_json["images"]
+                    pil_images = [Image.open(io.BytesIO(base64.b64decode(b64_image)))
+                                  for b64_image in b64_images]
+                    # Generate a 3x3 grid of the 256x256 images
+                    new = Image.new("RGB", (256 * 3, 256 * 3))
+
+                    for image in pil_images:
+                        new.paste(image,
+                                  (256 * (pil_images.index(image) % 3),
+                                   256 * (pil_images.index(image) // 3)))
+
+                    with io.BytesIO() as image_binary:
+                        new.save(image_binary, "PNG")
+                        image_binary.seek(0)
+                        file = discord.File(image_binary, filename="dallematrix.png")
+
+                    await ctx.reply(content=discord.utils.escape_markdown(discord.utils.escape_mentions(prompt)), file=file)
         await get_images(prompt, 1)
 
 
