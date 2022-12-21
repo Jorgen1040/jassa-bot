@@ -56,6 +56,7 @@ async def on_ready():
 
 
 if __name__ == '__main__':
+    # TODO: Add statcord (https://github.com/Iapetus-11/betterstatcord.py)
     # Load cogs
     for extension in initial_extensions:
         try:
