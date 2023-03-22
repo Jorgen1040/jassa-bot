@@ -665,7 +665,7 @@ async def quest(ctx, *, args: str):
 
     # Get prices from tarkov-market.com if API key is set
     if tarkov_market:
-        api = requests.get('https://tarkov-market.com/api/v1/item?q='
+        api = requests.get('https://api.tarkov-market.app/api/v1/item?q='
                            + title, headers={'x-api-key': tarkov_key})
         try:
             tarkov_item = api.json()[0]
