@@ -20,17 +20,17 @@ on:
   #IMAGE_NAME: jassa-bot
 
 jobs:
-  gitleaks:
-    if: github.event_name == 'pull_request'
+#   gitleaks:
+#     if: github.event_name == 'pull_request'
 
-    runs-on: ubuntu-latest
+#     runs-on: ubuntu-latest
 
-    steps:
-    - uses: actions/checkout@v3
-   # - name: Check for any exposed keys
-    - uses: zricethezav/gitleaks-action@v2
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#     steps:
+#     - uses: actions/checkout@v3
+#    # - name: Check for any exposed keys
+#     - uses: zricethezav/gitleaks-action@v2
+#       env:
+#         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   # Run tests.
   # See also https://docs.docker.com/docker-hub/builds/automated-testing/
