@@ -5,7 +5,7 @@ asyncio==3.4.3
 attrs==23.2.0; python_version >= '3.7'
 beautifulsoup4==4.12.3; python_full_version >= '3.6.0'
 bs4==0.0.2
-certifi==2023.11.17; python_version >= '3.6'
+certifi==2024.2.2; python_version >= '3.6'
 charset-normalizer==3.3.2; python_full_version >= '3.7.0'
 colorlog==6.8.2; python_version >= '3.6'
 discord-together==1.2.6; python_full_version >= '3.6.0'
