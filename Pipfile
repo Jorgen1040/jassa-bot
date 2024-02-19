@@ -17,7 +17,7 @@ pillow = "*"
 
 [dev-packages]
 pre-commit = "*"
-black = "==23.3.0"
+black = "==24.2.0"
 
 [requires]
 python_version = "3"
